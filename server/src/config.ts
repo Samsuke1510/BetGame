@@ -20,7 +20,7 @@ export const DAILY_CREDIT = 30;
 
 // Default betting lines used because the free MLB API provides no real odds.
 // A future version could fetch real lines from "The Odds API" instead.
-export const DEFAULT_TOTAL_LINE = 9.0; // over/under line (total runs)
+export const DEFAULT_TOTAL_LINE = 7.5; // over/under line (total runs)
 export const DEFAULT_SPREAD = -1.5; // favorite must win by more than this
 
 // Betting odds (multipliers). A $1 bet on even odds returns $2 total.

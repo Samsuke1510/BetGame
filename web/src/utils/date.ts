@@ -6,7 +6,7 @@
 // (Europe/Paris) — the browser's Intl API handles the conversion for us,
 // including summer/winter time changes.
 
-// Turn a stored game time (ISO string) into "HH:MM (Paris)" for display.
+// Turn a stored game time (ISO string) into "HH:MM" in Paris time for display.
 export function formatGameTime(gameTime: string): string {
   if (!gameTime) return ""; // games fetched before this feature have no time yet
 
@@ -20,7 +20,7 @@ export function formatGameTime(gameTime: string): string {
     hour12: false,
   }).format(date);
 
-  return `${time} (Paris)`;
+  return time;
 }
 
 // Format the calendar date (e.g. "2026-09-09") as a friendly weekday, e.g. "Wed 9 Sep".

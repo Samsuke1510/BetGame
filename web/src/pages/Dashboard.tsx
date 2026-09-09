@@ -150,6 +150,7 @@ export default function Dashboard({ user, onUserUpdate }: Props) {
                 <th>Pick</th>
                 <th>Stake</th>
                 <th>Odds</th>
+                <th>To win</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -163,6 +164,12 @@ export default function Dashboard({ user, onUserUpdate }: Props) {
                   <td>{bet.pick}</td>
                   <td>€{bet.stake.toFixed(2)}</td>
                   <td>{bet.odds}</td>
+                  {/* "To win" = how much this bet pays out if it wins (while pending). */}
+                  <td className="potential">
+                    {bet.status === "PENDING"
+                      ? `€${(bet.stake * bet.odds).toFixed(2)}`
+                      : "—"}
+                  </td>
                   <td className={`status status-${bet.status.toLowerCase()}`}>
                     {STATUS_LABELS[bet.status] ?? bet.status}
                     {bet.status === "WON" && bet.payout != null && ` (+€${bet.payout.toFixed(2)})`}
@@ -189,6 +196,7 @@ export default function Dashboard({ user, onUserUpdate }: Props) {
                 <th>Picks</th>
                 <th>Combined odds</th>
                 <th>Stake</th>
+                <th>To win</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -202,6 +210,12 @@ export default function Dashboard({ user, onUserUpdate }: Props) {
                   </td>
                   <td>{parlay.totalOdds.toFixed(2)}</td>
                   <td>€{parlay.stake.toFixed(2)}</td>
+                  {/* "To win" = how much this ticket pays out if it wins (while pending). */}
+                  <td className="potential">
+                    {parlay.status === "PENDING"
+                      ? `€${(parlay.stake * parlay.totalOdds).toFixed(2)}`
+                      : "—"}
+                  </td>
                   <td className={`status status-${parlay.status.toLowerCase()}`}>
                     {STATUS_LABELS[parlay.status] ?? parlay.status}
                     {parlay.status === "WON" && parlay.payout != null && ` (+€${parlay.payout.toFixed(2)})`}
