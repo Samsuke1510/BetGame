@@ -1,0 +1,365 @@
+/* ---------------------------------------------------------------------------
+   index.css — simple styling for the whole app
+   ---------------------------------------------------------------------------
+   No framework here, just clean plain CSS so beginners can read it. We use
+   three accent colors: navy (brand), green (success / balance), red (errors).
+--------------------------------------------------------------------------- */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: #0f172a; /* dark navy page background */
+  color: #e2e8f0;
+}
+
+/* ---- Layout ------------------------------------------------------------ */
+
+.app {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ---- Navbar ------------------------------------------------------------ */
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #f59e0b; /* amber, for the "sports" feel */
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.balance {
+  color: #34d399; /* green = money */
+  font-weight: 600;
+}
+
+.username {
+  color: #cbd5e1;
+}
+
+/* ---- Buttons ----------------------------------------------------------- */
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: opacity 0.15s;
+}
+
+.btn:hover {
+  opacity: 0.85;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+}
+
+.btn-ghost {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+.btn-ghost:hover {
+  background: #475569;
+}
+
+/* ---- Auth pages -------------------------------------------------------- */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 16px;
+  padding: 32px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-card h1 {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+}
+
+.auth-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.auth-card input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.auth-switch a {
+  color: #60a5fa;
+}
+
+/* ---- Dashboard --------------------------------------------------------- */
+
+.dashboard {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.dashboard-header h1 {
+  margin-bottom: 4px;
+}
+
+.dashboard-header p {
+  margin: 0;
+  color: #94a3b8;
+}
+
+.summary {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.summary h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.page-hint {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ---- Game card --------------------------------------------------------- */
+
+.game-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.game-teams {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.team {
+  font-weight: 600;
+}
+
+.at {
+  color: #64748b;
+}
+
+.score {
+  margin-left: auto;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+.game-lines {
+  display: flex;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  flex-wrap: wrap;
+}
+
+.bet-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.final-label {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* ---- Bet modal --------------------------------------------------------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 16px;
+  padding: 24px;
+  width: 340px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  text-transform: capitalize;
+}
+
+.modal-matchup {
+  color: #94a3b8;
+  margin: 0;
+}
+
+.pick-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pick-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.pick-btn.selected {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.potential {
+  color: #34d399;
+  font-weight: 600;
+}
+
+.modal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.modal input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ---- Bets table -------------------------------------------------------- */
+
+.bets-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.bets-table th,
+.bets-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #334155;
+}
+
+.bets-table th {
+  background: #334155;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+
+.status-won {
+  color: #34d399;
+  font-weight: 600;
+}
+
+.status-lost {
+  color: #f87171;
+}
+
+.status-pending {
+  color: #fbbf24;
+}
+
+.status-push {
+  color: #94a3b8;
+}
+
+.error {
+  color: #f87171;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.success {
+  color: #34d399;
+  margin: 0;
+  font-size: 0.9rem;
+}

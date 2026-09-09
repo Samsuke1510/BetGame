@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx prisma *)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"---EXIT:$?---\")",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:4000/api/health)",
+      "Bash(curl -s -X POST http://localhost:4000/api/auth/register -H \"Content-Type: application/json\" -d '{\"username\":\"testuser\",\"password\":\"secret123\"}')",
+      "Bash(curl -s -X POST http://localhost:4000/api/auth/login -H \"Content-Type: application/json\" -d '{\"username\":\"testuser\",\"password\":\"secret123\"}')",
+      "Bash(curl -s \"https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=2026-09-09\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); dates=d.get\\('dates',[]\\); print\\('dates:', len\\(dates\\)\\); print\\('games today:', len\\(dates[0]['games']\\) if dates else 0\\)\")",
+      "Bash(python -c \"import sys,json; gs=json.load\\(sys.stdin\\); print\\('count:', len\\(gs\\)\\); [print\\(g['id'], g['awayTeam'],'@',g['homeTeam'], g['status'], 'totalLine=',g['totalLine'], 'spread=',g['spread']\\) for g in gs[:4]]\")",
+      "Bash(npx tsx *)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(curl -s http://localhost:5173/api/health)",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

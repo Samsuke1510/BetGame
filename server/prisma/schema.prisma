@@ -1,0 +1,87 @@
+// -----------------------------------------------------------------------------
+// Prisma schema for BetGame
+// -----------------------------------------------------------------------------
+// Prisma is a tool that turns this schema into (1) a real database and
+// (2) TypeScript functions to read/write data. When you run a "migration",
+// Prisma creates the tables below in SQLite for us.
+//
+// Models in plain English:
+//   User  -> a person who signs up (they get virtual money to bet with).
+//   Game  -> one MLB baseball game for the day.
+//   Bet   -> a user's wager on one game.
+// -----------------------------------------------------------------------------
+
+// "sqlite" tells Prisma which database engine to use. For this project we use
+// SQLite so there is nothing to install — it is just a single file on disk.
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Prisma Client is the code that our app uses to talk to the database.
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ---------------- User ----------------
+// Each person who registers. They hold a virtual "balance" in euros.
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique // no two users can share a username
+  passwordHash String // the password, hashed (never stored in plain text)
+  balance      Float    @default(30) // virtual money; starts at 30 euros
+  createdAt    DateTime @default(now())
+
+  bets Bet[] // every bet this user has placed
+}
+
+// ---------------- Game ----------------
+// One MLB game. Data comes from the free MLB Stats API.
+model Game {
+  id         Int     @id @default(autoincrement())
+  gamePk     Int     @unique // MLB's own unique id for this game
+  awayTeam   String // e.g. "Yankees"
+  homeTeam   String // e.g. "Red Sox"
+  gameDate   String // ISO date like "2026-09-09"
+  status     String @default("SCHEDULED") // "SCHEDULED" or "FINAL"
+
+  awayScore  Int? // final runs scored by the away team (null until finished)
+  homeScore  Int? // final runs scored by the home team
+
+  // Betting lines. MLB's free API gives us no real odds, so we generate
+  // simple defaults. A comment in mlb.ts explains this.
+  totalLine Float @default(9.0) // over/under line: total runs
+  spread    Float @default(-1.5) // point spread for the favorite
+
+  winner String? // "away" or "home" once the game is final
+
+  bets Bet[] // every bet placed on this game
+}
+
+// ---------------- Bet ----------------
+// A single wager: a user picks a side of a game and stakes virtual euros.
+model Bet {
+  id        Int      @id @default(autoincrement())
+  type      String // "MONEYLINE" | "OVER_UNDER" | "SPREAD"
+  pick      String // which side they picked, e.g. "home", "away", "over", "under"
+  stake     Float // how many euros they wagered
+  odds      Float // multiplier; winner gets stake * odds
+  status    String   @default("PENDING") // "PENDING" | "WON" | "LOST" | "PUSH"
+  payout    Float? // profit paid if won (null while pending)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+
+  game Game @relation(fields: [gameId], references: [id])
+  gameId Int
+}
+
+// ---------------- AppState ----------------
+// A one-row table used to remember "the last day we gave everyone their daily
+// credit". This lets the credit job run on any schedule without double-crediting.
+model AppState {
+  id Int @id
+
+  lastCreditDay String @default("")
+}

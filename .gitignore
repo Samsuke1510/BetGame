@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment variables (keep secrets out of git)
+.env
+
+# SQLite database file (generated at runtime by Prisma)
+*.db
+*.db-journal
+
+# Logs
+*.log
+
+# OS / editor files
+.DS_Store
+Thumbs.db

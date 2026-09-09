@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    /* ---- Target: modern Node (Node 24) ---- */
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+
+    /* Output compiled JS to the "dist" folder */
+    "outDir": "dist",
+    "rootDir": "src",
+
+    /* Strictness helps catch beginner bugs early */
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noEmitOnError": true
+  },
+  "include": ["src"]
+}
