@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "Backend for BetGame: auth, MLB games, virtual betting, and settlement.",
-  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

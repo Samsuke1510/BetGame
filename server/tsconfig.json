@@ -2,8 +2,8 @@
   "compilerOptions": {
     /* ---- Target: modern Node (Node 24) ---- */
     "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "CommonJS",
+    "moduleResolution": "Node10",
 
     /* Output compiled JS to the "dist" folder */
     "outDir": "dist",
