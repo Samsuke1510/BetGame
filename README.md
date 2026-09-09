@@ -4,11 +4,11 @@ A **virtual-money** sports betting app for MLB baseball. No real money — every
 gets **€30 a day** of play money and can bet it on the day's MLB games.
 
 - 💻 **Web app** (this repo): React + TypeScript
+- 📱 **Mobile app** (also in this repo): React Native via Expo — uses the same backend
 - ⚙️ **Backend**: Node.js + TypeScript + Express + Prisma (SQLite)
 - 🗓 **Data**: free [MLB Stats API](https://statsapi.mlb.com) — fetched daily, no key needed
 
-> A **React Native (mobile) version** is planned for a later step. It will reuse this
-> same backend, so the API here is already mobile-friendly (plain JSON).
+> Both apps share the same backend, so the API is already mobile-friendly (plain JSON).
 
 ---
 
@@ -17,7 +17,7 @@ gets **€30 a day** of play money and can bet it on the day's MLB games.
 1. **Create an account** (username + password). You start with **€30** virtual balance.
 2. **Bet on today's MLB games** in three ways:
    - **Win / Loss** — pick which team wins.
-   - **Over / Under** — pick whether total runs will go over or under the line (9.0).
+   - **Over / Under** — pick whether total runs will go over or under the line (7.5).
    - **Point Spread** — pick against the home team's -1.5 spread.
 3. **Build parlays** — combine 2+ picks from *different* games into one ticket.
    Each leg's odds multiply together (e.g. 3 picks of 1.91 → ~6.97), so the potential
@@ -93,6 +93,37 @@ npm run dev
   all users and bets (dev-only).
 - **`npm` is not recognized on Windows** → Node.js installs `npm` for you; re-run the
   Node installer (or reopen the terminal) so the command is on your PATH.
+
+---
+
+## Mobile app (React Native via Expo)
+
+The repo also contains a **React Native** version of the app in the `mobile/` folder,
+built with **Expo**. It's a separate app that talks to the *same* backend — no server
+changes are needed. Run it alongside the backend:
+
+```bash
+# 1. Start the backend (from the BetGame root) — the mobile app needs it:
+npm run dev         # or just: npm run dev:server
+
+# 2. In a second terminal, run the mobile app (web preview):
+cd mobile
+npm install         # first time only
+npx expo start --web    # opens http://localhost:8081
+```
+
+The mobile app is standalone (its own `package.json`), so it does not use `npm run dev`.
+
+### Where the mobile app connects
+
+The mobile app connects to the backend address in `mobile/src/config.ts`
+(`API_BASE_URL`). The default works for the web preview on this PC; switch it when you
+run on a device:
+
+- **Browser preview** (default) → `http://localhost:4000`
+- **Android emulator** → `http://10.0.2.2:4000`
+- **Physical phone with Expo Go** → your PC's LAN IP, e.g. `http://192.168.1.20:4000`
+  (find it with `ipconfig` — phone and PC must be on the same Wi-Fi)
 
 ---
 
@@ -223,7 +254,6 @@ games on future dates by sending `?date=YYYY-MM-DD` to `GET /api/games`.
 
 ## Next steps (planned)
 
-- 📱 **Mobile app** with React Native / Expo, reusing this exact API.
 - 📊 Real betting lines via The Odds API.
 - 🏆 More bet types (e.g. first-to-5-runs, full-game handicaps).
 - 🔒 Hardening: rate limiting, stronger password rules.
