@@ -7,6 +7,21 @@
 //   3. Mounts all routes under /api
 //   4. Starts the background cron jobs
 //   5. Listens on a port so clients can connect
+//
+// ── How to launch the whole app manually (no AI needed) ─────────────────────
+// All commands run from the BetGame folder (the one containing package.json).
+//
+//   First time on a machine (create the database + install packages):
+//     npm install
+//     npm run prisma:migrate -w server
+//
+//   Every day after that, just:
+//     npm run dev
+//
+//   Then open http://localhost:5173 in your browser (the web app). The backend
+//   runs on http://localhost:4000. Press Ctrl+C to stop it all.
+//   Need only one side? Use `npm run dev:server` (backend only) or
+//   `npm run dev:web` (web app only).
 // -----------------------------------------------------------------------------
 
 import "dotenv/config"; // load .env values into process.env

@@ -50,24 +50,49 @@ gets **€30 a day** of play money and can bet it on the day's MLB games.
 ## How to run it
 
 You need [Node.js](https://nodejs.org) 18+ (this project was built with Node 24).
+All commands run from the `BetGame` folder (the one that contains `package.json`).
+
+### Everyday run (the only command you need)
 
 ```bash
-# 1. Install all dependencies (both apps at once — npm workspaces)
-npm install
-
-# 2. Create the database (SQLite file) — only the first time
-npm run prisma:migrate -w server
-
-# 3. Start backend + frontend together
 npm run dev
 ```
 
-Then open **http://localhost:5173** in your browser.
+Then open **http://localhost:5173** in your browser. To stop the app, press `Ctrl + C`
+in the terminal. That one command starts **both** the backend and the web app:
 
-- The **web app** runs on port **5173**.
-- The **backend** runs on port **4000** (the web app forwards `/api` calls there automatically).
+- The **backend** runs on port **4000** (it fetches MLB games, credits €30 daily, settles bets).
+- The **web app** runs on port **5173** and forwards `/api` calls to the backend automatically.
 
-> If you ever need them separately: `npm run dev:server` and `npm run dev:web`.
+### First-time setup (new machine / empty folder)
+
+Only do these once, before the first `npm run dev`:
+
+```bash
+# 1. Download all dependencies (both apps at once — npm workspaces)
+npm install
+
+# 2. Create the SQLite database file (this works because of the workspace flag):
+npm run prisma:migrate -w server
+
+# 3. Then start the app as usual
+npm run dev
+```
+
+> Running them separately, if you ever want just one side: `npm run dev:server`
+> and `npm run dev:web`.
+
+### Troubleshooting / if it doesn't start
+
+- **The browser shows nothing / can't connect** → the terminal output shows a
+  `Local:` URL from Vite (normally exactly `http://localhost:5173`); use that.
+- **Port already in use** → change `PORT` in `server/.env` and the proxy target in
+  `web/vite.config.ts` to match.
+- **App won't open / no games / want a fresh start** → delete the
+  `server/prisma/dev.db` file, then run step 2 (`prisma:migrate`) again. That wipes
+  all users and bets (dev-only).
+- **`npm` is not recognized on Windows** → Node.js installs `npm` for you; re-run the
+  Node installer (or reopen the terminal) so the command is on your PATH.
 
 ---
 
@@ -98,7 +123,7 @@ Look at the comments in `server/src/cron/jobs.ts` for exact schedule alternative
 The free MLB API gives schedules and **scores**, but **no betting odds**. So this app
 `generates simple default lines` (configurable in `server/src/config.ts`):
 
-- Over/Under line = **9.0** runs
+- Over/Under line = **7.5** runs
 - Home-team spread = **-1.5** (home must win by 2+ to cover)
 - Odds = flat **1.91** on every bet (~ -110 in American odds)
 
