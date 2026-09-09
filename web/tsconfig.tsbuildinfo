@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/api.ts","./src/main.tsx","./src/types.ts","./src/components/betmodal.tsx","./src/components/gamecard.tsx","./src/components/navbar.tsx","./src/pages/dashboard.tsx","./src/pages/loginpage.tsx","./src/pages/registerpage.tsx"],"errors":true,"version":"5.9.3"}
