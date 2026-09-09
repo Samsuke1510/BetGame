@@ -17,7 +17,8 @@ export interface Game {
   gamePk: number;
   awayTeam: string;
   homeTeam: string;
-  gameDate: string;
+  gameDate: string; // "2026-09-09"
+  gameTime: string; // full start time, ISO UTC string (displayed in Paris time)
   status: string; // "SCHEDULED" | "FINAL"
   awayScore: number | null;
   homeScore: number | null;
@@ -43,4 +44,34 @@ export interface Bet {
 export interface AuthResponse {
   token: string;
   user: User;
+}
+
+// One leg (pick) of a parlay — a Bet that belongs to a Parlay.
+export interface ParlayLeg {
+  id: number;
+  type: "MONEYLINE" | "OVER_UNDER" | "SPREAD";
+  pick: string;
+  odds: number;
+  status: string; // "PENDING" | "WON" | "LOST" | "PUSH"
+  game: Game;
+}
+
+// A parlay ticket: several legs combined for multiplied odds.
+export interface Parlay {
+  id: number;
+  stake: number;
+  totalOdds: number;
+  status: string; // "PENDING" | "WON" | "LOST" | "PUSH"
+  payout: number | null;
+  createdAt: string;
+  legs: ParlayLeg[];
+}
+
+// A pick the user has added to the in-progress parlay slip (not yet submitted).
+export interface ParlayPick {
+  gameId: number;
+  type: string;
+  pick: string;
+  odds: number;
+  label: string; // short human description, e.g. "Twins to win"
 }

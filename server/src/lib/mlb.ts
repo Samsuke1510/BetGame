@@ -14,7 +14,8 @@ export interface FetchedGame {
   gamePk: number;
   awayTeam: string;
   homeTeam: string;
-  gameDate: string; // ISO date, e.g. "2026-09-09"
+  gameDate: string; // plain date, e.g. "2026-09-09" (used for filtering)
+  gameTime: string; // full start time as an ISO string in UTC (shown in Paris time)
   awayScore: number | null;
   homeScore: number | null;
   status: "SCHEDULED" | "FINAL";
@@ -45,7 +46,11 @@ export async function fetchGamesForDate(date: string): Promise<FetchedGame[]> {
     const away = g.teams.away;
     const home = g.teams.home;
 
-    // "abstractGameState" is "Final" once the game is over.
+    // MLB's "gameDate" is the full UTC start time (e.g. "2026-09-09T17:10:00Z");
+    // "officialDate" is the venue's local calendar date. We keep both:
+    //   gameDate -> the date, used to group games by day
+    //   gameTime -> the exact UTC time, displayed to users as Paris time
+    const gameTime = g.gameDate;
     const isFinal = g.status?.abstractGameState === "Final";
 
     // Decide the winner from the score, if we have a final score.
@@ -59,6 +64,7 @@ export async function fetchGamesForDate(date: string): Promise<FetchedGame[]> {
       awayTeam: away.team.name,
       homeTeam: home.team.name,
       gameDate: date,
+      gameTime,
       awayScore: isFinal ? away.score : null,
       homeScore: isFinal ? home.score : null,
       status: isFinal ? "FINAL" : "SCHEDULED",

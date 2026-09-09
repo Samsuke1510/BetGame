@@ -34,6 +34,11 @@ export const SPREAD_ODDS = 1.91;
 export const MIN_STAKE = 1;
 export const MAX_STAKE = 500;
 
+// Parlay rules: a parlay needs at least 2 picks (from different games) and can
+// hold up to 10. More legs = higher combined odds.
+export const PARLAY_MIN_LEGS = 2;
+export const PARLAY_MAX_LEGS = 10;
+
 // MLB Stats API base URL. Free, no API key needed.
 export const MLB_API_BASE = "https://statsapi.mlb.com/api/v1";
 

@@ -19,8 +19,12 @@ gets **€30 a day** of play money and can bet it on the day's MLB games.
    - **Win / Loss** — pick which team wins.
    - **Over / Under** — pick whether total runs will go over or under the line (9.0).
    - **Point Spread** — pick against the home team's -1.5 spread.
-3. **Watch your balance** — winnings are added when the game finishes.
-4. **Daily €30** — every user gets a €30 top-up each day, and it *accumulates*
+3. **Build parlays** — combine 2+ picks from *different* games into one ticket.
+   Each leg's odds multiply together (e.g. 3 picks of 1.91 → ~6.97), so the potential
+   win grows fast.
+4. **Every game card shows its start time in Paris time**, colored with each team's colors.
+5. **Watch your balance** — winnings are added when the game finishes.
+6. **Daily €30** — every user gets a €30 top-up each day, and it *accumulates*
    (unused balance carries over; it is never reset).
 
 > **Small note:** a brand-new account gets its starting €30 immediately so you can bet
@@ -138,8 +142,10 @@ Every file has friendly comments explaining what it does and why, written for a 
 | POST   | `/api/auth/login`    | no   | Log in, get a token |
 | GET    | `/api/auth/me`       | yes  | Current user + balance |
 | GET    | `/api/games`         | yes  | Today's MLB games (from DB) |
-| POST   | `/api/bets`          | yes  | Place a bet (deducts stake) |
-| GET    | `/api/bets`          | yes  | Your bets, past and pending |
+| POST   | `/api/bets`          | yes  | Place a single bet (deducts stake) |
+| GET    | `/api/bets`          | yes  | Your single bets, past and pending |
+| POST   | `/api/parlays`       | yes  | Place a parlay (2–10 picks, deducts stake) |
+| GET    | `/api/parlays`       | yes  | Your parlay tickets |
 | GET    | `/api/health`        | no   | "Is the server alive?" |
 
 ---
@@ -155,9 +161,24 @@ Every file has friendly comments explaining what it does and why, written for a 
 - **Losing:** the stake stays with the house (it's just virtual).
 - **Push (tie):** if total runs *exactly* equal the over/under line, you get your
   stake refunded and the bet is marked "Refunded".
+- **Parlay payout:** your single stake × the combined odds (all legs' odds multiplied).
+  A parlay only pays if **every** leg wins; one losing leg loses the whole ticket.
+  Pushed legs don't kill a parlay — they're just taken out of the odds (counted as 1.0)
+  so your payout is slightly lower.
 
 Where's this logic? `server/src/lib/settle.ts` (the rules) and
 `server/src/cron/jobs.ts` (applying them to the database).
+
+### Game times ⏰
+MLB publishes game start times in UTC. The app stores them and every card converts them
+to **Paris time** (`Europe/Paris`) in the browser (see `web/src/utils/date.ts`) — including
+summer/winter time automatically.
+
+### Card colors 🎨
+Each MLB team is mapped to its brand color (`web/src/data/teamColors.ts`) — e.g. Yankees
+navy, Red Sox red. Every game card shows a stripe blending the two teams' colors plus a
+colored chip on each team name. Teams not in the list get a stable fallback color, so no
+card ever looks broken.
 
 ---
 

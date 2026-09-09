@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------------
 
 import axios from "axios";
-import type { AuthResponse, Bet, Game, User } from "./types";
+import type { AuthResponse, Bet, Game, Parlay, User } from "./types";
 
 // Create one axios instance pre-configured for our API.
 const api = axios.create({ baseURL: "/api" });
@@ -54,5 +54,17 @@ export async function placeBet(payload: { gameId: number; type: string; pick: st
 
 export async function fetchBets(): Promise<Bet[]> {
   const { data } = await api.get<Bet[]>("/bets");
+  return data;
+}
+
+// ---- Parlays -------------------------------------------------------------
+
+export async function placeParlay(legs: { gameId: number; type: string; pick: string }[], stake: number): Promise<Parlay> {
+  const { data } = await api.post<Parlay>("/parlays", { legs, stake });
+  return data;
+}
+
+export async function fetchParlays(): Promise<Parlay[]> {
+  const { data } = await api.get<Parlay[]>("/parlays");
   return data;
 }

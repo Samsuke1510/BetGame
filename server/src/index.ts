@@ -16,6 +16,7 @@ import { PORT } from "./config";
 import { authRouter } from "./routes/auth";
 import { gamesRouter } from "./routes/games";
 import { betsRouter } from "./routes/bets";
+import { parlaysRouter } from "./routes/parlays";
 import { startJobs } from "./cron/jobs";
 
 const app = express();
@@ -35,6 +36,7 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/games", gamesRouter);
 app.use("/api/bets", betsRouter);
+app.use("/api/parlays", parlaysRouter);
 
 // Start the server and the background jobs together.
 app.listen(PORT, () => {

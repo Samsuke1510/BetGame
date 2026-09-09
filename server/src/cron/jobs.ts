@@ -18,7 +18,7 @@ import cron from "node-cron";
 import { prisma } from "../db";
 import { DAILY_CREDIT } from "../config";
 import { fetchGamesForDate } from "../lib/mlb";
-import { evaluateBet } from "../lib/settle";
+import { evaluateBet, evaluateParlay } from "../lib/settle";
 
 // Today's date as "YYYY-MM-DD" (what the MLB API expects).
 function today(): string {
@@ -37,6 +37,7 @@ export async function fetchTodayGames() {
     await prisma.game.upsert({
       where: { gamePk: g.gamePk },
       update: {
+        gameTime: g.gameTime,
         status: g.status,
         awayScore: g.awayScore,
         homeScore: g.homeScore,
@@ -47,6 +48,7 @@ export async function fetchTodayGames() {
         awayTeam: g.awayTeam,
         homeTeam: g.homeTeam,
         gameDate: g.gameDate,
+        gameTime: g.gameTime,
         status: g.status,
         awayScore: g.awayScore,
         homeScore: g.homeScore,
@@ -89,6 +91,9 @@ export async function grantDailyCredit() {
 
 // ---- 3. SETTLE ----------------------------------------------------------------
 // Look for bets on games that are now FINAL and pay out the winners.
+// Stand-alone bets are paid right away. A bet that is a PARLAY LEG only gets
+// its own outcome recorded — the whole ticket is paid out once ALL its legs
+// have finished (see finishParlayIfComplete below).
 export async function settleFinishedBets() {
   // Find all pending bets whose game has finished.
   const pendingBets = await prisma.bet.findMany({
@@ -96,9 +101,20 @@ export async function settleFinishedBets() {
     include: { game: true },
   });
 
+  // Track which parlays had at least one leg resolved today.
+  const affectedParlayIds = new Set<number>();
+
   for (const bet of pendingBets) {
     const outcome = evaluateBet(bet, bet.game);
 
+    // A PARLAY LEG: record its outcome only; the ticket pays out later.
+    if (bet.parlayId) {
+      await prisma.bet.update({ where: { id: bet.id }, data: { status: outcome } });
+      affectedParlayIds.add(bet.parlayId);
+      continue;
+    }
+
+    // A STAND-ALONE bet: settle it right now.
     if (outcome === "PUSH") {
       // Tie/refund: give the stake back, mark the bet refunded-friendly as "PUSH".
       await prisma.bet.update({ where: { id: bet.id }, data: { status: "PUSH" } });
@@ -125,9 +141,46 @@ export async function settleFinishedBets() {
     await prisma.bet.update({ where: { id: bet.id }, data: { status: "LOST" } });
   }
 
-  if (pendingBets.length > 0) {
-    console.log(`[cron] Settled ${pendingBets.length} bet(s)`);
+  // Now check every affected parlay: if all its legs are decided, settle it.
+  for (const parlayId of affectedParlayIds) {
+    await finishParlayIfComplete(parlayId);
   }
+
+  if (pendingBets.length > 0) {
+    console.log(`[cron] Settled ${pendingBets.length} bet/leg(s)`);
+  }
+}
+
+// If all of a parlay's legs have finished, decide the ticket and pay the user.
+// If legs are still pending, this is a no-op (we'll be back next run).
+async function finishParlayIfComplete(parlayId: number) {
+  const parlay = await prisma.parlay.findUnique({
+    where: { id: parlayId },
+    include: { legs: true },
+  });
+  if (!parlay) return;
+
+  // Any leg still waiting? Ticket stays open.
+  if (parlay.legs.some((leg) => leg.status === "PENDING")) return;
+
+  // All legs decided — apply the parlay rules.
+  const result = evaluateParlay(parlay.legs, parlay.stake);
+
+  // Save the ticket's final status.
+  await prisma.parlay.update({
+    where: { id: parlay.id },
+    data: { status: result.status, payout: result.payout },
+  });
+
+  // WON: pay stake × combined odds. PUSH: refund the stake. LOST: nothing.
+  if (result.payout != null) {
+    await prisma.user.update({
+      where: { id: parlay.userId },
+      data: { balance: { increment: result.payout } },
+    });
+  }
+
+  console.log(`[cron] Parlay ${parlay.id} -> ${result.status}`);
 }
 
 // ---- Start the scheduled tasks -------------------------------------------------

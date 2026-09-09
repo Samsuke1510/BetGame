@@ -15,6 +15,7 @@ interface Props {
   betType: string;
   onClose: () => void;
   onPlaced?: () => void; // callback after a successful bet
+  onAddToParlay?: (pick: { gameId: number; type: string; pick: string }) => void;
 }
 
 const ODDS = 1.91; // matches the server's flat odds
@@ -35,7 +36,7 @@ const PICK_OPTIONS: Record<string, { value: string; label: string }[]> = {
   ],
 };
 
-export default function BetModal({ game, betType, onClose, onPlaced }: Props) {
+export default function BetModal({ game, betType, onClose, onPlaced, onAddToParlay }: Props) {
   // The currently-selected pick and the stake the user types in.
   const [pick, setPick] = useState<string | null>(null);
   const [stake, setStake] = useState("");
@@ -62,6 +63,17 @@ export default function BetModal({ game, betType, onClose, onPlaced }: Props) {
     } catch (err: any) {
       setError(err.response?.data?.error ?? "Something went wrong");
     }
+  }
+
+  // "Add to parlay" doesn't stake anything yet — it just adds this pick to the
+  // parlay basket, then closes the modal so the slip at the bottom updates.
+  function handleAddToParlay() {
+    if (!pick) {
+      setError("Pick a side first");
+      return;
+    }
+    onAddToParlay?.({ gameId: game.id, type: betType, pick });
+    onClose();
   }
 
   return (
@@ -113,6 +125,12 @@ export default function BetModal({ game, betType, onClose, onPlaced }: Props) {
             <button className="btn btn-outline" type="button" onClick={onClose}>
               Cancel
             </button>
+            {/* Only show "Add to parlay" when the Dashboard wired up the handler. */}
+            {onAddToParlay && (
+              <button className="btn btn-ghost" type="button" onClick={handleAddToParlay}>
+                Add to parlay
+              </button>
+            )}
             <button className="btn btn-primary" type="submit">
               Place bet
             </button>

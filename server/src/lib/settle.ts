@@ -59,3 +59,52 @@ export function evaluateBet(bet: Bet, game: Game): BetOutcome {
       throw new Error(`Unknown bet type: ${bet.type}`);
   }
 }
+
+// -----------------------------------------------------------------------------
+// PARLAY RULES
+// -----------------------------------------------------------------------------
+// A parlay is a bundle of legs, each with its own outcome. The ticket follows
+// the classic parlay rules:
+//
+//   • Any leg LOST      -> the whole ticket is LOST (no payout).
+//   • Any leg PENDING   -> the ticket waits until every leg has finished.
+//   • All legs PUSH     -> the ticket is a PUSH (stake refunded, no profit).
+//   • Otherwise (some WON, the rest PUSH) -> the ticket WINS. The pushed legs
+//     count as odds 1.0 (excluded), so the payout is:
+//        stake × (odds of all WON legs multiplied together)
+// -----------------------------------------------------------------------------
+
+export interface ParlayLegOutcome {
+  status: string; // "PENDING" | "WON" | "LOST" | "PUSH"
+  odds: number;
+}
+
+export interface ParlayResult {
+  status: "PENDING" | "WON" | "LOST" | "PUSH";
+  payout: number | null; // how much the user gets back (null while pending / lost)
+}
+
+export function evaluateParlay(legs: ParlayLegOutcome[], stake: number): ParlayResult {
+  // Rule 1: any lost leg kills the ticket.
+  if (legs.some((leg) => leg.status === "LOST")) {
+    return { status: "LOST", payout: null };
+  }
+
+  // Rule 2: if a match still hasn't finished, keep waiting.
+  if (legs.some((leg) => leg.status === "PENDING")) {
+    return { status: "PENDING", payout: null };
+  }
+
+  // Rule 3: every leg pushed (a full refund, no profit).
+  if (legs.every((leg) => leg.status === "PUSH")) {
+    return { status: "PUSH", payout: stake };
+  }
+
+  // Rule 4: we won! Multiply the odds of the legs that actually WON.
+  // Pushed legs are left out (they "count as 1.0").
+  const winOdds = legs
+    .filter((leg) => leg.status === "WON")
+    .reduce((product, leg) => product * leg.odds, 1);
+
+  return { status: "WON", payout: stake * winOdds };
+}

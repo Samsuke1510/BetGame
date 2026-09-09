@@ -184,11 +184,28 @@ body {
 .game-card {
   background: #1e293b;
   border: 1px solid #334155;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 14px;
+  padding: 0 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* The --away-color / --home-color variables are set inline in GameCard.
+     We use them for the stripe, the team dots, and a subtle card tint. */
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.game-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Colored top stripe, blending the away team color into the home color. */
+.game-stripe {
+  height: 5px;
+  margin: 0 -16px 4px; /* stretch edge to edge */
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(90deg, var(--away-color), var(--home-color));
 }
 
 .game-teams {
@@ -197,8 +214,30 @@ body {
   gap: 8px;
 }
 
+/* Each team name tints to its own color. */
 .team {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.05rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-away {
+  color: var(--away-color);
+}
+
+.team-home {
+  color: var(--home-color);
+}
+
+/* Small colored dot in front of each team name. */
+.team-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
 }
 
 .at {
@@ -207,16 +246,33 @@ body {
 
 .score {
   margin-left: auto;
-  font-weight: 700;
-  color: #f59e0b;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: #fbbf24;
+}
+
+/* Meta row: game time (Paris) + the betting lines. */
+.game-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.time-badge {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .game-lines {
-  display: flex;
-  gap: 16px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: #94a3b8;
-  flex-wrap: wrap;
 }
 
 .bet-buttons {
@@ -362,4 +418,96 @@ body {
   color: #34d399;
   margin: 0;
   font-size: 0.9rem;
+}
+
+/* ---- Parlay slip (bottom bar) ------------------------------------------- */
+
+.parlay-slip {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-top: 3px solid #2563eb; /* blue accent line on top */
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.slip-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: #f59e0b;
+}
+
+.slip-picks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slip-pick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slip-remove {
+  background: none;
+  border: none;
+  color: #f87171;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+}
+
+.slip-label {
+  color: #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.slip-odds {
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.slip-combined {
+  margin: 8px 0 0;
+  color: #94a3b8;
+}
+
+.slip-combined strong {
+  color: #fbbf24;
+}
+
+.slip-right {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 180px;
+}
+
+.slip-stake {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.slip-stake input {
+  padding: 9px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: #e2e8f0;
 }

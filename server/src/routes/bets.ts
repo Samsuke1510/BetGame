@@ -14,7 +14,8 @@ import { MAX_STAKE, MIN_STAKE, MONEYLINE_ODDS, OVER_UNDER_ODDS, SPREAD_ODDS } fr
 export const betsRouter = Router();
 
 // Allowed pick values for each bet type, used for validation.
-const VALID_PICKS: Record<string, string[]> = {
+// Exported so the parlay route can reuse the same rules.
+export const VALID_PICKS: Record<string, string[]> = {
   MONEYLINE: ["away", "home"],
   OVER_UNDER: ["over", "under"],
   SPREAD: ["away", "home"],
@@ -89,10 +90,11 @@ betsRouter.post("/", requireAuth, async (req, res) => {
   res.status(201).json(bet);
 });
 
-// GET /api/bets — return the user's bets with their game info filled in.
+// GET /api/bets — return the user's STAND-ALONE bets with their game info.
+// (parlayId: null filters out the legs of parlays, which have their own list.)
 betsRouter.get("/", requireAuth, async (req, res) => {
   const bets = await prisma.bet.findMany({
-    where: { userId: req.user!.id },
+    where: { userId: req.user!.id, parlayId: null },
     include: { game: true }, // also fetch the related game for display
     orderBy: { createdAt: "desc" },
   });

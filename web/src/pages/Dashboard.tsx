@@ -1,22 +1,23 @@
 // -----------------------------------------------------------------------------
 // Dashboard.tsx — the main page after login
 // -----------------------------------------------------------------------------
-// Three sections: today's games to bet on, the user's bets, and a summary of
-// their balance. It fetches games + bets from the server whenever it loads or
-// the user refreshes, and asks App to update the balance after placing a bet.
+// Sections: today's games to bet on (single or add-to-parlay), the parlay slip
+// (bottom bar), the user's single bets, and their parlay tickets. It fetches
+// from the server on load, and asks App to update the balance after any bet.
 // -----------------------------------------------------------------------------
 
 import { useCallback, useEffect, useState } from "react";
-import { fetchBets, fetchGames, fetchMe } from "../api";
+import { fetchBets, fetchGames, fetchMe, fetchParlays, placeParlay as placeParlayApi } from "../api";
 import GameCard from "../components/GameCard";
-import type { Bet, Game, User } from "../types";
+import ParlaySlip from "../components/ParlaySlip";
+import type { Bet, Game, Parlay, ParlayPick, User } from "../types";
 
 interface Props {
   user: User;
   onUserUpdate: (user: User) => void;
 }
 
-// Friendly labels + colors for showing bet status.
+// Friendly labels for showing a bet/parlay status.
 const STATUS_LABELS: Record<string, string> = {
   PENDING: "Pending",
   WON: "Won",
@@ -33,14 +34,17 @@ const BET_LABELS: Record<string, string> = {
 export default function Dashboard({ user, onUserUpdate }: Props) {
   const [games, setGames] = useState<Game[]>([]);
   const [bets, setBets] = useState<Bet[]>([]);
+  const [parlays, setParlays] = useState<Parlay[]>([]);
+  const [parlayPicks, setParlayPicks] = useState<ParlayPick[]>([]); // in-progress slip
   const [loading, setLoading] = useState(true);
 
-  // Load games and bets from the server. useCallback lets us call refresh from
-  // both the initial load and after placing a bet.
+  // Load everything from the server. useCallback lets us call refresh from both
+  // the initial load and after placing a bet.
   const refresh = useCallback(async () => {
-    const [g, b] = await Promise.all([fetchGames(), fetchBets()]);
+    const [g, b, p] = await Promise.all([fetchGames(), fetchBets(), fetchParlays()]);
     setGames(g);
     setBets(b);
+    setParlays(p);
     setLoading(false);
   }, []);
 
@@ -48,13 +52,44 @@ export default function Dashboard({ user, onUserUpdate }: Props) {
     refresh();
   }, [refresh]);
 
-  // After a bet, reload everything — including the balance from /me so the
-  // navbar and summary update with the deducted stake.
+  // Refresh everything + the balance after a single bet.
   const handleBetPlaced = useCallback(async () => {
     await refresh();
     const me = await fetchMe();
     onUserUpdate(me);
   }, [refresh, onUserUpdate]);
+
+  // --- Parlay slip helpers ----------------------------------------------------
+
+  // Add one pick to the slip. The backend insists on one leg per game, so we
+  // ignore an attempt to add a second pick for the same game.
+  function handleAddToParlay(pick: ParlayPick) {
+    setParlayPicks((prev) =>
+      prev.some((p) => p.gameId === pick.gameId) ? prev : [...prev, pick]
+    );
+  }
+
+  function handleRemovePick(gameId: number) {
+    setParlayPicks((prev) => prev.filter((p) => p.gameId !== gameId));
+  }
+
+  // Submit the whole slip. Returns an error string (or null on success) so the
+  // slip bar can show it.
+  const handlePlaceParlay = useCallback(
+    async (legs: { gameId: number; type: string; pick: string }[], stake: number): Promise<string | null> => {
+      try {
+        await placeParlayApi(legs, stake);
+        setParlayPicks([]);
+        await refresh();
+        const me = await fetchMe();
+        onUserUpdate(me);
+        return null;
+      } catch (err: any) {
+        return err.response?.data?.error ?? "Something went wrong";
+      }
+    },
+    [refresh, onUserUpdate]
+  );
 
   // Wins/losses totals for the summary panel.
   const won = bets.filter((b) => b.status === "WON").length;
@@ -66,15 +101,16 @@ export default function Dashboard({ user, onUserUpdate }: Props) {
     <div className="dashboard">
       <header className="dashboard-header">
         <h1>Welcome, {user.username}!</h1>
-        <p>Today's MLB games — pick a side and place a virtual bet.</p>
+        <p>Today's MLB games — pick a side, place a single bet, or build a parlay.</p>
       </header>
 
       <section className="summary">
-        <h2>Your bets</h2>
+        <h2>Your activity</h2>
         <p>
-          <strong>Total:</strong> {bets.length} &nbsp;·&nbsp;
+          <strong>Bets:</strong> {bets.length} &nbsp;·&nbsp;
           <strong>Won:</strong> {won} &nbsp;·&nbsp;
-          <strong>Lost:</strong> {lost}
+          <strong>Lost:</strong> {lost} &nbsp;·&nbsp;
+          <strong>Parlays:</strong> {parlays.length}
         </p>
       </section>
 
@@ -89,7 +125,12 @@ export default function Dashboard({ user, onUserUpdate }: Props) {
         ) : (
           <div className="games-grid">
             {games.map((game) => (
-              <GameCard key={game.id} game={game} onPlaced={handleBetPlaced} />
+              <GameCard
+                key={game.id}
+                game={game}
+                onPlaced={handleBetPlaced}
+                onAddToParlay={handleAddToParlay}
+              />
             ))}
           </div>
         )}
@@ -97,9 +138,9 @@ export default function Dashboard({ user, onUserUpdate }: Props) {
 
       {/* My bets */}
       <section>
-        <h2>My bets</h2>
+        <h2>My single bets</h2>
         {bets.length === 0 ? (
-          <p className="page-hint">You haven't placed any bets yet.</p>
+          <p className="page-hint">You haven't placed any single bets yet.</p>
         ) : (
           <table className="bets-table">
             <thead>
@@ -132,6 +173,51 @@ export default function Dashboard({ user, onUserUpdate }: Props) {
           </table>
         )}
       </section>
+
+      {/* My parlays */}
+      <section>
+        <h2>My parlays</h2>
+        {parlays.length === 0 ? (
+          <p className="page-hint">
+            No parlays yet. Open a game, pick a side, hit "Add to parlay", then add a
+            second game and place your ticket from the bottom bar.
+          </p>
+        ) : (
+          <table className="bets-table">
+            <thead>
+              <tr>
+                <th>Picks</th>
+                <th>Combined odds</th>
+                <th>Stake</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {parlays.map((parlay) => (
+                <tr key={parlay.id}>
+                  <td>
+                    {parlay.legs
+                      .map((leg) => `${leg.game.awayTeam} @ ${leg.game.homeTeam} (${BET_LABELS[leg.type]}, ${leg.pick})`)
+                      .join(" · ")}
+                  </td>
+                  <td>{parlay.totalOdds.toFixed(2)}</td>
+                  <td>€{parlay.stake.toFixed(2)}</td>
+                  <td className={`status status-${parlay.status.toLowerCase()}`}>
+                    {STATUS_LABELS[parlay.status] ?? parlay.status}
+                    {parlay.status === "WON" && parlay.payout != null && ` (+€${parlay.payout.toFixed(2)})`}
+                    {parlay.status === "PUSH" && ` (€${parlay.payout?.toFixed(2)})`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      {/* The bottom bar for building a parlay (only shows while building one). */}
+      {parlayPicks.length > 0 && (
+        <ParlaySlip picks={parlayPicks} onRemove={handleRemovePick} onPlace={handlePlaceParlay} />
+      )}
     </div>
   );
 }
