@@ -49,9 +49,6 @@ gets **€30 a day** of play money and can bet it on the day's MLB games.
 
 ## How to run it
 
-You need [Node.js](https://nodejs.org) 18+ (this project was built with Node 24).
-All commands run from the `BetGame` folder (the one that contains `package.json`).
-
 ### Everyday run (the only command you need)
 
 ```bash
@@ -69,30 +66,10 @@ in the terminal. That one command starts **both** the backend and the web app:
 Only do these once, before the first `npm run dev`:
 
 ```bash
-# 1. Download all dependencies (both apps at once — npm workspaces)
 npm install
-
-# 2. Create the SQLite database file (this works because of the workspace flag):
 npm run prisma:migrate -w server
-
-# 3. Then start the app as usual
 npm run dev
 ```
-
-> Running them separately, if you ever want just one side: `npm run dev:server`
-> and `npm run dev:web`.
-
-### Troubleshooting / if it doesn't start
-
-- **The browser shows nothing / can't connect** → the terminal output shows a
-  `Local:` URL from Vite (normally exactly `http://localhost:5173`); use that.
-- **Port already in use** → change `PORT` in `server/.env` and the proxy target in
-  `web/vite.config.ts` to match.
-- **App won't open / no games / want a fresh start** → delete the
-  `server/prisma/dev.db` file, then run step 2 (`prisma:migrate`) again. That wipes
-  all users and bets (dev-only).
-- **`npm` is not recognized on Windows** → Node.js installs `npm` for you; re-run the
-  Node installer (or reopen the terminal) so the command is on your PATH.
 
 ---
 

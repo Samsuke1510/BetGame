@@ -16,7 +16,7 @@
 // "sqlite" tells Prisma which database engine to use. For this project we use
 // SQLite so there is nothing to install — it is just a single file on disk.
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
