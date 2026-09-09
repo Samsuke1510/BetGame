@@ -27,6 +27,8 @@
 import "dotenv/config"; // load .env values into process.env
 import express from "express";
 import cors from "cors";
+import path from "path";
+import fs from "fs";
 import { PORT } from "./config";
 import { authRouter } from "./routes/auth";
 import { gamesRouter } from "./routes/games";
@@ -52,6 +54,22 @@ app.use("/api/auth", authRouter);
 app.use("/api/games", gamesRouter);
 app.use("/api/bets", betsRouter);
 app.use("/api/parlays", parlaysRouter);
+
+// Serve the built web app (production). When web/dist exists, this Express
+// server also hosts the React site, so one URL serves everything. In dev you
+// leave this empty and use the Vite proxy on 5173 instead.
+const webDist = path.join(__dirname, "../../web/dist");
+if (fs.existsSync(webDist)) {
+  app.use(express.static(webDist));
+  // Anything that is not an API call falls through to the React app.
+  app.use((req, res, next) => {
+    if (req.method === "GET" && !req.path.startsWith("/api")) {
+      res.sendFile(path.join(webDist, "index.html"));
+    } else {
+      next();
+    }
+  });
+}
 
 // Start the server and the background jobs together.
 app.listen(PORT, () => {
